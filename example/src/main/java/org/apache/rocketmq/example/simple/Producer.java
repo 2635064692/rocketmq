@@ -34,7 +34,7 @@ public class Producer {
                     Message msg = new Message("TopicTest",
                         "TagA",
                         "OrderID188",
-                        "Hello world".getBytes(RemotingHelper.DEFAULT_CHARSET));
+                        "{}".getBytes(RemotingHelper.DEFAULT_CHARSET));
                     SendResult sendResult = producer.send(msg);
                     System.out.printf("%s%n", sendResult);
                 }

@@ -197,7 +197,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         prepareSharableHandlers();
 
         ServerBootstrap childHandler =
-            this.serverBootstrap.group(this.eventLoopGroupBoss, this.eventLoopGroupSelector)
+            this.serverBootstrap.group(this.eventLoopGroupBoss, this.eventLoopGroupSelector)        //boss、worker
                 .channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                 .option(ChannelOption.SO_BACKLOG, nettyServerConfig.getServerSocketBacklog())
                 .option(ChannelOption.SO_REUSEADDR, true)
@@ -426,7 +426,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
     }
 
     @ChannelHandler.Sharable
-    class NettyServerHandler extends SimpleChannelInboundHandler<RemotingCommand> {
+    class NettyServerHandler extends SimpleChannelInboundHandler<RemotingCommand> {             //mq交互服务端
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, RemotingCommand msg) throws Exception {

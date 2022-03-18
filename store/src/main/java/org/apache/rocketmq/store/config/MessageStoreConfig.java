@@ -34,6 +34,12 @@ public class MessageStoreConfig {
     private String storePathCommitLog = System.getProperty("user.home") + File.separator + "store"
         + File.separator + "commitlog";
 
+    public static void main(String[] args) {
+         String storePathCommitLog = System.getProperty("user.home") + File.separator + "store"
+                + File.separator + "commitlog";
+        System.out.println(storePathCommitLog);
+    }
+
     private String readOnlyCommitLogStorePaths = null;
 
     // CommitLog file size,default is 1G

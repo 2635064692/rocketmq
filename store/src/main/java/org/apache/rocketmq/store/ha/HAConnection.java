@@ -253,7 +253,7 @@ public class HAConnection {
                             + "], and slave request " + HAConnection.this.slaveRequestOffset);
                     }
 
-                    if (this.lastWriteOver) {
+                    if (this.lastWriteOver) {           //Socket 发送心跳
 
                         long interval =
                             HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now() - this.lastWriteTimestamp;
@@ -342,7 +342,7 @@ public class HAConnection {
             int writeSizeZeroTimes = 0;
             // Write Header
             while (this.byteBufferHeader.hasRemaining()) {
-                int writeSize = this.socketChannel.write(this.byteBufferHeader);
+                int writeSize = this.socketChannel.write(this.byteBufferHeader);        //Socket 发送心跳
                 if (writeSize > 0) {
                     writeSizeZeroTimes = 0;
                     this.lastWriteTimestamp = HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now();

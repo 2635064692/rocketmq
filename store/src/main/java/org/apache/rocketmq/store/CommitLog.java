@@ -61,10 +61,10 @@ public class CommitLog {
     protected final static int BLANK_MAGIC_CODE = -875286124;
     protected final MappedFileQueue mappedFileQueue;
     protected final DefaultMessageStore defaultMessageStore;
-    private final FlushCommitLogService flushCommitLogService;
+    private final FlushCommitLogService flushCommitLogService;  //刷盘机制；同步、异步
 
     //If TransientStorePool enabled, we must flush message to FileChannel at fixed periods
-    private final FlushCommitLogService commitLogService;
+    private final FlushCommitLogService commitLogService;       //定时刷盘机制，需要开启设置
 
     private final AppendMessageCallback appendMessageCallback;
     private final ThreadLocal<PutMessageThreadLocal> putMessageThreadLocal;
@@ -79,7 +79,7 @@ public class CommitLog {
     private volatile Set<String> fullStorePaths = Collections.emptySet();
 
     private final MultiDispatch multiDispatch;
-    private final FlushDiskWatcher flushDiskWatcher;
+    private final FlushDiskWatcher flushDiskWatcher;        //观察者
 
     public CommitLog(final DefaultMessageStore defaultMessageStore) {
         String storePath = defaultMessageStore.getMessageStoreConfig().getStorePathCommitLog();
@@ -722,7 +722,7 @@ public class CommitLog {
         storeStatsService.getSinglePutMessageTopicTimesTotal(msg.getTopic()).add(1);
         storeStatsService.getSinglePutMessageTopicSizeTotal(topic).add(result.getWroteBytes());
 
-        CompletableFuture<PutMessageStatus> flushResultFuture = submitFlushRequest(result, msg);
+        CompletableFuture<PutMessageStatus> flushResultFuture = submitFlushRequest(result, msg);        //刷盘
         CompletableFuture<PutMessageStatus> replicaResultFuture = submitReplicaRequest(result, msg);
         return flushResultFuture.thenCombine(replicaResultFuture, (flushStatus, replicaStatus) -> {
             if (flushStatus != PutMessageStatus.PUT_OK) {
@@ -852,7 +852,7 @@ public class CommitLog {
             if (messageExt.isWaitStoreMsgOK()) {
                 GroupCommitRequest request = new GroupCommitRequest(result.getWroteOffset() + result.getWroteBytes(),
                         this.defaultMessageStore.getMessageStoreConfig().getSyncFlushTimeout());
-                flushDiskWatcher.add(request);
+                flushDiskWatcher.add(request);      //观察者，定时轮询
                 service.putRequest(request);
                 return request.future();
             } else {
@@ -861,7 +861,7 @@ public class CommitLog {
             }
         }
         // Asynchronous flush
-        else {
+        else {  //异步刷盘；区分是否设置定时刷盘机制。
             if (!this.defaultMessageStore.getMessageStoreConfig().isTransientStorePoolEnable()) {
                 flushCommitLogService.wakeup();
             } else  {
@@ -1059,7 +1059,7 @@ public class CommitLog {
         }
     }
 
-    class FlushRealTimeService extends FlushCommitLogService {
+    class FlushRealTimeService extends FlushCommitLogService {          //异步刷盘
         private long lastFlushTimestamp = 0;
         private long printTimes = 0;
 
@@ -1171,7 +1171,7 @@ public class CommitLog {
     /**
      * GroupCommit Service
      */
-    class GroupCommitService extends FlushCommitLogService {
+    class GroupCommitService extends FlushCommitLogService {            //同步刷盘
         private volatile LinkedList<GroupCommitRequest> requestsWrite = new LinkedList<GroupCommitRequest>();
         private volatile LinkedList<GroupCommitRequest> requestsRead = new LinkedList<GroupCommitRequest>();
         private final PutMessageSpinLock lock = new PutMessageSpinLock();
@@ -1204,7 +1204,7 @@ public class CommitLog {
                     // two times the flush
                     boolean flushOK = CommitLog.this.mappedFileQueue.getFlushedWhere() >= req.getNextOffset();
                     for (int i = 0; i < 2 && !flushOK; i++) {
-                        CommitLog.this.mappedFileQueue.flush(0);
+                        CommitLog.this.mappedFileQueue.flush(0);            //同步刷盘执行。
                         flushOK = CommitLog.this.mappedFileQueue.getFlushedWhere() >= req.getNextOffset();
                     }
 
@@ -1586,7 +1586,7 @@ public class CommitLog {
             if (propertiesLength > 0)
                 this.encoderBuffer.put(propertiesData);
 
-            encoderBuffer.flip();
+            encoderBuffer.flip();           //翻转？
             return null;
         }
 
