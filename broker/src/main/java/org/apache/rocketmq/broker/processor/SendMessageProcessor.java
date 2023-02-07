@@ -191,7 +191,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
 
         if (msgExt.getReconsumeTimes() >= maxReconsumeTimes
             || delayLevel < 0) {
-            newTopic = MixAll.getDLQTopic(requestHeader.getGroup());
+            newTopic = MixAll.getDLQTopic(requestHeader.getGroup());        //死信队列DLQ
             queueIdInt = ThreadLocalRandom.current().nextInt(99999999) % DLQ_NUMS_PER_GROUP;
 
             topicConfig = this.brokerController.getTopicConfigManager().createTopicInSendMessageBackMethod(newTopic,

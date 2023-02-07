@@ -43,7 +43,7 @@ public class PullMessageService extends ServiceThread {
         this.mQClientFactory = mQClientFactory;
     }
 
-    public void executePullRequestLater(final PullRequest pullRequest, final long timeDelay) {
+    public void executePullRequestLater(final PullRequest pullRequest, final long timeDelay) {      //异常处理，延时重试（非定时重试）
         if (!isStopped()) {
             this.scheduledExecutorService.schedule(new Runnable() {
                 @Override
